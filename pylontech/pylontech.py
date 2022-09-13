@@ -239,8 +239,9 @@ class Pylontech:
         print(ff)
         return ff
 
-    def get_module_serial_number(self):
-        self.send_cmd(2, 0x93)
+    def get_module_serial_number(self, dev_id):
+        bdevid = "{:02X}".format(dev_id).encode()
+        self.send_cmd(2, 0x93, bdevid)
         f = self.read_frame()
         # infoflag = f.info[0]
         return self.module_serial_number_fmt.parse(f.info[0:])
@@ -260,6 +261,25 @@ class Pylontech:
         # infoflag = f.info[0]
         d = self.get_values_single_fmt.parse(f.info[1:])
         return d
+
+    def probe_devices(self):
+        """Return list of addresses (dev_ids) of all found devices in group."""
+        found_devices = []
+
+        # TODO: Figure out multi-group addressing. This only attempts
+        # to handle single group.
+        master_battery_addr = 2
+        last_possible_slave_addr = 13
+        for addr in range(master_battery_addr, last_possible_slave_addr + 1):
+            try:
+                self.get_module_serial_number(addr)
+                found_devices.append(addr)
+            except ValueError:
+                # This assumes modules are sequentially ordered. Is
+                # that always true?
+                break
+
+        return found_devices
 
 
 if __name__ == '__main__':

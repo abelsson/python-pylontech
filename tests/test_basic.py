@@ -395,3 +395,12 @@ def test_up2500_management_info():
     assert not d.status.ChargeImmediately1
     assert not d.status.FullChargeRequest
     assert not d.status.ShouldCharge
+
+
+def test_up2500_1module_probe_devices():
+    p = Pylontech([b"~20024600C0220248505442503032313030433033323832F6DD\r",
+                   b""])
+
+    d = p.probe_devices()
+
+    assert d == [2]
